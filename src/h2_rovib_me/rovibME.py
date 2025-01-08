@@ -6,6 +6,7 @@ import sys
 import numpy as np
 from scipy import interpolate
 from scipy import integrate
+import pickle as pkl
 from pathlib import Path
 
 dir_root = Path(__file__).parent
@@ -547,11 +548,141 @@ def compute(mol, vl, Jl, vr, Jr, wavelength, wavelength_unit, operator, verbose=
             integrand, 0.2, 4.48, tol=1.0e-6, vec_func=False, maxiter=1000
         )
         rounderr = round(result[1], 8)
-        print(
-            "{0} < v={1} J={2} | {3} | v={4} J={5} >  =  {6} a.u. (Integration err: {7}) ".format(
-                mol, vl, Jl, name[i], vr, Jr, abs(round(result[0], 7)), rounderr
+        if verbose:
+            print(
+                "{0} < v={1} J={2} | {3} | v={4} J={5} >  =  {6} a.u. (Integration err: {7}) ".format(
+                    mol, vl, Jl, name[i], vr, Jr, abs(round(result[0], 7)), rounderr
+                )
             )
+
+        if n == 1:
+            return abs(round(result[0], 7))
+
+
+def construct_saveobj(
+    vl=np.array([]),
+    Jl=np.array([]),
+    vr=np.array([]),
+    Jr=np.array([]),
+    result=np.array([]),
+):
+    return {
+        "vl": vl,
+        "Jl": Jl,
+        "vr": vr,
+        "Jr": Jr,
+        "result": result,
+    }
+
+
+def get_filename(mol, wavelength, wavelength_unit, operator):
+    wavelength = (
+        wavelength if type(wavelength) == str else f"{wavelength:.2f}".replace(".", "")
+    )
+    return (
+        dir_data
+        / f"{mol}_{str(wavelength).replace('.', '')}{wavelength_unit}_{operator}.pkl"
+    )
+
+
+def load_from_file(mol, wavelength, wavelength_unit, operator, verbose=False):
+    load_path = get_filename(mol, wavelength, wavelength_unit, operator)
+    print(load_path)
+    if load_path.exists():
+        if verbose:
+            print(f"Loading {load_path}")
+        with open(load_path, "rb") as f:
+            obj = pkl.load(f)
+    else:
+        obj = construct_saveobj()
+    return obj
+
+
+def save_to_file(mol, wavelength, wavelength_unit, operator, obj, verbose=False):
+    load_path = get_filename(mol, wavelength, wavelength_unit, operator)
+    with open(load_path, "wb") as f:
+        if verbose:
+            print(f"Saving {load_path}")
+        pkl.dump(obj, f)
+
+
+def load_or_compute(
+    mol, vl, Jl, vr, Jr, wavelength, wavelength_unit, operator, obj=None, verbose=False
+):
+    loaded_obj = obj is None
+    if loaded_obj:
+        load_from_file(mol, wavelength, wavelength_unit, operator, verbose)
+
+    id = (obj["vl"] == vl) * (obj["Jl"] == Jl) * (obj["vr"] == vr) * (obj["Jr"] == Jr)
+    if np.sum(id) == 1:
+        return obj["result"][id], obj
+    else:
+        result_i = compute(
+            mol, vl, Jl, vr, Jr, wavelength, wavelength_unit, operator, verbose=verbose
         )
+        obj = construct_saveobj(
+            *[
+                np.append(obj[x], y)
+                for x, y in zip(
+                    ["vl", "Jl", "vr", "Jr", "result"], [vl, Jl, vr, Jr, result_i]
+                )
+            ]
+        )
+        if loaded_obj:
+            save_to_file(mol, wavelength, wavelength_unit, operator, obj, verbose)
+        return result_i, obj
 
 
 # ************************************************************************
+
+
+def compute_batch(
+    mol, vl, Jl, vr, Jr, wavelength, wavelength_unit, operator, verbose=False
+):
+    # This function supports inputting arrays as vl, Jl, vr, Jr. The arrays can have different dimensions.
+    # e.g. a 10x1 Jl and 1x4 vl input will result in a 10x4 output.
+
+    # If the inputs are of different dimensions, determine the shape of the resulting matrix
+    resultshape = vl * Jl * vr * Jr * np.ones((1,))
+    resultshape = np.ones(resultshape.shape)
+
+    # Convert all arguments to 1D numpy arrays
+    vl = np.array(vl * resultshape, ndmin=1, dtype=np.int8).flatten()
+    Jl = np.array(Jl * resultshape, ndmin=1, dtype=np.int8).flatten()
+    vr = np.array(vr * resultshape, ndmin=1, dtype=np.int8).flatten()
+    Jr = np.array(Jr * resultshape, ndmin=1, dtype=np.int8).flatten()
+
+    # Compute results for individual quantum numbers
+    result = np.zeros((resultshape.size,))
+    obj = load_from_file(mol, wavelength, wavelength_unit, operator, verbose)
+    for i in range(resultshape.size):
+        result[i], obj = load_or_compute(
+            mol,
+            vl[i],
+            Jl[i],
+            vr[i],
+            Jr[i],
+            wavelength,
+            wavelength_unit,
+            operator,
+            obj=obj,
+            verbose=verbose,
+        )
+    save_to_file(mol, wavelength, wavelength_unit, operator, obj, verbose)
+
+    # Reshape into desired shape
+    return np.reshape(result, resultshape.shape)
+
+
+if __name__ == "__main__":
+    for vi in range(4):
+        print(f"{vi}->{vi+1}")
+        x = 0
+        for Ji in range(10):
+            a = compute("H2", vi + 1, Ji, vi, Ji, 532, "nm", "iso", verbose=False)
+            if x == 0:
+                x = a
+            a = a / x
+            print(f"J={Ji:.0f}: a={a:.5f}")
+    # print(f'a={compute("H2", 0, 1, 0, 3, 355, "nm", "aniso", verbose=False):.5f}')
+    # print(f'a={compute("H2",  0, 0, 1, 0, 632.8, "nm", "iso", verbose=False):.5f}')
