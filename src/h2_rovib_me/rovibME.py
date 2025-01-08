@@ -544,9 +544,7 @@ def compute(mol, vl, Jl, vr, Jr, wavelength, wavelength_unit, operator, verbose=
         secarray2 = spline(rwave, product, der2[0], der2[1])
 
         # step 5: compute the integral using adaptive Quadrature
-        result = integrate.quadrature(
-            integrand, 0.2, 4.48, tol=1.0e-6, vec_func=False, maxiter=1000
-        )
+        result = integrate.quad(integrand, 0.2, 4.48, epsabs=1.0e-6)
         rounderr = round(result[1], 8)
         if verbose:
             print(
@@ -676,7 +674,7 @@ def compute_batch(
 
 if __name__ == "__main__":
     for vi in range(4):
-        print(f"{vi}->{vi+1}")
+        print(f"v{vi}->v{vi+1}")
         x = 0
         for Ji in range(10):
             a = compute("H2", vi + 1, Ji, vi, Ji, 532, "nm", "iso", verbose=False)
