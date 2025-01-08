@@ -6,6 +6,11 @@ import sys
 import numpy as np
 from scipy import interpolate
 from scipy import integrate
+from pathlib import Path
+
+dir_root = Path(__file__).parent
+dir_data = dir_root / "data"
+dir_wave = dir_root / "wavefunctions"
 
 # -------------------------------------------------------------------
 
@@ -366,14 +371,24 @@ def compute(mol, vl, Jl, vr, Jr, wavelength, wavelength_unit, operator):
     # ----------------------------------------------------------------
 
     # Load the polarizability data ( alpha_xx and alpha_zz)
-    alpha_xx = np.loadtxt("./data/matrix_xxf.txt")
-    alpha_zz = np.loadtxt("./data/matrix_zzf.txt")
-    omega = np.loadtxt("./data/freq.txt")
-    dist = np.loadtxt("./data/distance.txt")
+    alpha_xx = np.loadtxt(dir_data / "matrix_xxf.txt")
+    alpha_zz = np.loadtxt(dir_data / "matrix_zzf.txt")
+    omega = np.loadtxt(dir_data / "freq.txt")
+    dist = np.loadtxt(dir_data / "distance.txt")
     distance = np.asarray(dist)
     omega_nm = 1e7 / (omega * 219474.6313702000)  # convert the original freq to nm
-    static_xx = np.loadtxt("./data/static_xx.txt")
-    static_zz = np.loadtxt("./data/static_zz.txt")
+    static_xx = np.loadtxt(dir_data / "static_xx.txt")
+    static_zz = np.loadtxt(dir_data / "static_zz.txt")
+
+    if not (
+        alpha_xx.shape == alpha_zz.shape
+        or len(omega) == alpha_xx.shape[0]
+        or len(static_xx) == len(distance)
+        or len(static_zz) == len(distance)
+    ):
+        raise Exception(
+            f"Dimension check on polarizability data matrices or wavelength file failed. Please check that the files in {dir_data} are correct."
+        )
 
     # compute the isotropy(mean polarizability) and anisotropy (gamma)
     isotropy = np.absolute(2 * (np.array(alpha_xx)) + np.array(alpha_zz)) / 3
