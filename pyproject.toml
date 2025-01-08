@@ -28,3 +28,7 @@ version = "2.0.0"  # REQUIRED, although can be dynamic
 dependencies = [
   "numpy", "scipy"
 ]
+
+# Include the data files in the ./src/h2_rovib_me/data/ directory
+# in the package.
+package-data = {"h2_rovib_me": ["data/*.dat"]}

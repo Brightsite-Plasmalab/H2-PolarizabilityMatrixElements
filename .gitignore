@@ -1,5 +1,5 @@
 # Project-specific
-# None yet
+src/h2_rovib_me/data/*.pkl
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
