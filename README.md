@@ -1,4 +1,51 @@
 
+# This fork
+
+Forked from [ankit7540/H2-PolarizabilityMatrixElements](https://github.com/ankit7540/H2-PolarizabilityMatrixElements). Published in [Polarizability tensor invariants of H<sub>2</sub>, HD, and D<sub>2</sub>](https://doi.org/10.1063/1.5011433).
+
+This fork has the following changes relative to the original branch:
+- Optional verbosity
+- Installable as a package
+- Caching of results
+
+## Installation
+Development version: `pip install git+https://github.com/Brightsite-Plasmalab/H2-PolarizabilityMatrixElements@develop`  
+Latest stable version: `pip install git+https://github.com/Brightsite-Plasmalab/H2-PolarizabilityMatrixElements@master`
+
+## Example usage
+```python
+from h2_rovib_me import *
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Calculate the intensity of the S-branch vibrational anti-Stokes Raman transition
+# i.e. dv = -1, dJ = 2
+dJ = 2
+dv = -1
+
+Ji = np.arange(0, 13) # (13,) = (1, 13)
+Jf = Ji + dJ
+vi = np.arange(1, 5)[:, np.newaxis] # (4, 1)
+print(vi.shape)
+vf = vi + dv
+
+# Compute the isotropic and anisotropic contributions
+iso = compute_batch("H2", vi, Ji, vf, Jf, 532, "nm", "iso") # (4, 13)
+aniso = compute_batch("H2", vi, Ji, vf, Jf, 532, "nm", "aniso") # (4, 13)
+
+for parameter, label in zip([iso, aniso], ["iso", "aniso"]):
+    plt.figure()
+
+    # Plot the intensity as a function of Ji for each vi
+    for i, v in enumerate(vi):
+        plt.plot(Ji, parameter[i], 's', label=f"$v_i$={v}")
+
+    plt.xlabel("$J_i$")
+    plt.ylabel(label)
+    plt.legend()
+    plt.show()
+```
+
 # H<sub>2</sub>-PolarizabilityMatrixElements
 
 [Link to the article](https://doi.org/10.1063/1.5011433) {  Polarizability tensor invariants of H<sub>2</sub>, HD, and D<sub>2</sub>, https://doi.org/10.1063/1.5011433  }
