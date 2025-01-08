@@ -460,14 +460,7 @@ def compute(mol, vl, Jl, vr, Jr, wavelength, wavelength_unit, operator):
             omegaFinal = wv
         elif wavelength_unit == "a" or wavelength_unit == "A":
             omegaFinal = wv / 10
-        elif not (
-            wavelength_unit == "h"
-            or wavelength_unit == "H"
-            or wavelength_unit == "n"
-            or wavelength_unit == "nm"
-            or wavelength_unit == "a"
-            or wavelength_unit == "A"
-        ):
+        else:
             print("Message : Default unit of nm will be used.")
             omegaFinal = wv
 
@@ -505,11 +498,7 @@ def compute(mol, vl, Jl, vr, Jr, wavelength, wavelength_unit, operator):
             print("Error : Operator not correctly specified. Exiting")
             quit()
 
-    elif not (
-        wavelength == "static"
-        or wavelength == "s"
-        or isinstance(wavelength, (int, float))
-    ):
+    else:
         print(
             'Error : Incorrect specification of wavelength. Use number for dynamic property and "s" or "static" for static. Exiting'
         )
