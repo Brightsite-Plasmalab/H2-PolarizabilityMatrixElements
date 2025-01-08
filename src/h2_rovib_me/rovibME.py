@@ -136,8 +136,7 @@ def spline(x, y, yp1, ypn):
     if nx == ny:
         n = nx
     else:
-        print("Error : x and y data have different lengths in spline.")
-        quit()
+        raise Exception("Error : x and y data have different lengths in spline.")
 
     u = np.zeros(n)
     y2 = np.zeros(n)  # this is the output
@@ -207,8 +206,7 @@ def splint(xa, ya, y2a, x):
     ny2a = len(y2a)
 
     if nxa != nya or nxa != ny2a or nya != ny2a:
-        print("Error : xa or ya or y2a have incorrect dimension(s).")
-        quit()
+        raise Exception("Error : xa or ya or y2a have incorrect dimension(s).")
 
     n = nxa
 
@@ -230,8 +228,7 @@ def splint(xa, ya, y2a, x):
     h = xa[khi] - xa[klo]
 
     if h == 0:
-        print("Error : Bad xa input in splint")
-        quit()
+        raise Exception("Error : Bad xa input in splint")
 
     a = (xa[khi] - x) / h
     b = (x - xa[klo]) / h
@@ -386,18 +383,15 @@ def compute(mol, vl, Jl, vr, Jr, wavelength, wavelength_unit, operator, verbose=
     r_wave = dir_wave / "r_wave.txt"
     # print(Wfn1,Wfn2)
     if vl < 0 or vr < 0 or vl > 4 or vr > 4:
-        print("Error : v value out of range. vl and vr = [0,4]. Exiting ")
-        quit()
+        raise Exception("Error : v value out of range. vl and vr = [0,4]. Exiting ")
 
     if Jl < 0 or Jr < 0 or Jl > 15 or Jr > 15:
-        print("Error : J value out of range. Jl and Jr =[0,15]. Exiting ")
-        quit()
+        raise Exception("Error : J value out of range. Jl and Jr =[0,15]. Exiting ")
 
     if not (mol == "H2" or mol == "HD" or mol == "D2"):
-        print(
+        raise Exception(
             "Error : Incorrect molecule chosen. For H2 enter H2, for D2 enter D2, for HD enter HD. Use quotes. Exiting  "
         )
-        quit()
 
     # Proceed to load wavefunctions.
     psi1 = np.loadtxt(Wfn1)
@@ -430,8 +424,7 @@ def compute(mol, vl, Jl, vr, Jr, wavelength, wavelength_unit, operator, verbose=
             name = ["alpha_xx", "alpha_zz", "isotropy", "anisotropy"]
             n = 4
         else:
-            print("Error : Operator not correctly specified. Exiting ")
-            quit()
+            raise Exception("Error : Operator not correctly specified. Exiting ")
 
     # DYNAMIC
     elif isinstance(wavelength, (int, float)):
@@ -480,14 +473,12 @@ def compute(mol, vl, Jl, vr, Jr, wavelength, wavelength_unit, operator, verbose=
             name = ["alpha_xx", "alpha_zz", "isotropy", "anisotropy"]
             n = 4
         else:
-            print("Error : Operator not correctly specified. Exiting")
-            quit()
+            raise Exception("Error : Operator not correctly specified. Exiting")
 
     else:
-        print(
+        raise Exception(
             'Error : Incorrect specification of wavelength. Use number for dynamic property and "s" or "static" for static. Exiting'
         )
-        quit()
 
     # -------------------------------------------------------------------------
     for i in range(n):  # evaluation of  interpolation and integral
@@ -585,7 +576,6 @@ def get_filename(mol, wavelength, wavelength_unit, operator):
 
 def load_from_file(mol, wavelength, wavelength_unit, operator, verbose=False):
     load_path = get_filename(mol, wavelength, wavelength_unit, operator)
-    print(load_path)
     if load_path.exists():
         if verbose:
             print(f"Loading {load_path}")
