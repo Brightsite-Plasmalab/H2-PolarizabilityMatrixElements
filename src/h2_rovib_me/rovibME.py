@@ -398,9 +398,9 @@ def compute(mol, vl, Jl, vr, Jr, wavelength, wavelength_unit, operator):
     anisotropy_static = static_zz - static_xx
 
     # step 1: load the required wavefunctions ------------------------
-    Wfn1 = "./wavefunctions/{0}v{1}J{2}_norm.txt".format(mol, vl, Jl)
-    Wfn2 = "./wavefunctions/{0}v{1}J{2}_norm.txt".format(mol, vr, Jr)
-    r_wave = "./wavefunctions/r_wave.txt"
+    Wfn1 = dir_wave / "{0}v{1}J{2}_norm.txt".format(mol, vl, Jl)
+    Wfn2 = dir_wave / "{0}v{1}J{2}_norm.txt".format(mol, vr, Jr)
+    r_wave = dir_wave / "r_wave.txt"
     # print(Wfn1,Wfn2)
     if vl < 0 or vr < 0 or vl > 4 or vr > 4:
         print("Error : v value out of range. vl and vr = [0,4]. Exiting ")
