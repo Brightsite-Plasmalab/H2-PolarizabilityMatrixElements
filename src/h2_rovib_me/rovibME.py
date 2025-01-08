@@ -246,29 +246,9 @@ def splint(xa, ya, y2a, x):
 # ************************************************************************
 # ************************************************************************
 
-# Loading polarizability data and checks  ::::
 
-# Load the polarizability data ( alpha_xx and alpha_zz)---
-alpha_xx = np.loadtxt("./data/matrix_xxf.txt")
-alpha_zz = np.loadtxt("./data/matrix_zzf.txt")
-omega = np.loadtxt("./data/freq.txt")
-distance = np.loadtxt("./data/distance.txt")
-static_xx = np.loadtxt("./data/static_xx.txt")
-static_zz = np.loadtxt("./data/static_zz.txt")
-
-
-# check size of the arrays -------------------------------
-# print("Dimensions of isotropy matrix :",alpha_xx.shape)
-# print("Dimensions of anisotropy matrix :",alpha_zz.shape)
-if not (
-    alpha_xx.shape == alpha_zz.shape
-    or len(omega) == alpha_xx.shape[0]
-    or len(static_xx) == len(distance)
-    or len(static_zz) == len(distance)
-):
-    print("Dimension check on polarizability data matrices or wavelength file failed.")
-    quit()
-else:
+def help():
+    omega = np.loadtxt(dir_data / "freq.txt")
     print("Polarizability data dimension checked.")
     print("\n")
     omega_nm = 1e7 / (omega * 219474.6313702000)
@@ -316,14 +296,16 @@ else:
     print('\t\t\t          for all the above use "all"   or  "All"or "ALL" ')
 
     print("...ready.")
+
+
 # ********************************************************************
 # the actual function for computation of the rovibrational matrix element.
 # vl, Jl, vr , Jr are numbers
 # mol, wavelength unit and operator are string, hence need quotes.
 
 
-def compute(mol, vl, Jl, vr, Jr, wavelength, wavelength_unit, operator):
-    """#  parameters:
+def compute(mol, vl, Jl, vr, Jr, wavelength, wavelength_unit, operator, verbose=True):
+    r"""#  parameters:
     # mol  =    molecule (for H2 enter "H2", for D2 enter "D2", for HD enter "HD")
     # vl   =    vibrational state for the bra, vl = [0,4]
     # Jl   =    rotational state for the bra,  Jl = [0,15]
@@ -467,11 +449,13 @@ def compute(mol, vl, Jl, vr, Jr, wavelength, wavelength_unit, operator):
         if omegaFinal < omega_nm[0] or omegaFinal > omega_nm[-1]:
             sys.exit("Error : Requested wavelength is out of range. Exiting ")
 
-        print(
-            "Selected wavelength in nanometer : {0}, Hartree : {1}".format(
-                round(omegaFinal, 6), round((1e7 / (omegaFinal * 219474.63137020)), 6)
+        if verbose:
+            print(
+                "Selected wavelength in nanometer : {0}, Hartree : {1}".format(
+                    round(omegaFinal, 6),
+                    round((1e7 / (omegaFinal * 219474.63137020)), 6),
+                )
             )
-        )
 
         n = 0
         if operator == "x" or operator == "xx":
@@ -516,7 +500,6 @@ def compute(mol, vl, Jl, vr, Jr, wavelength, wavelength_unit, operator):
             else:
                 parameter = param
         else:
-
             # interpolate to the asked wavelength ----------------
             if not (n == 1):
                 param = list[i]
