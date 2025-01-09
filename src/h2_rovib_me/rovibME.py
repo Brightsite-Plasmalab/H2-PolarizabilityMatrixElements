@@ -383,10 +383,14 @@ def compute(mol, vl, Jl, vr, Jr, wavelength, wavelength_unit, operator, verbose=
     r_wave = dir_wave / "r_wave.txt"
     # print(Wfn1,Wfn2)
     if vl < 0 or vr < 0 or vl > 4 or vr > 4:
-        raise Exception("Error : v value out of range. vl and vr = [0,4]. Exiting ")
+        # raise Exception("Error : v value out of range. vl and vr = [0,4]. Exiting ")
+        print("Error : v value out of range. vl and vr = [0,4]. Returning nan.")
+        return np.nan
 
     if Jl < 0 or Jr < 0 or Jl > 15 or Jr > 15:
-        raise Exception("Error : J value out of range. Jl and Jr =[0,15]. Exiting ")
+        # raise Exception("Error : J value out of range. Jl and Jr =[0,15]. Exiting ")
+        print("Error : J value out of range. Jl and Jr =[0,15]. Returning nan.")
+        return np.nan
 
     if not (mol == "H2" or mol == "HD" or mol == "D2"):
         raise Exception(
