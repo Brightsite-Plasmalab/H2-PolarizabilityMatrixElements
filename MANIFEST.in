@@ -1,1 +1,2 @@
 recursive-include src/h2_rovib_me/data *
+recursive-include src/h2_rovib_me/wavefunctions *
